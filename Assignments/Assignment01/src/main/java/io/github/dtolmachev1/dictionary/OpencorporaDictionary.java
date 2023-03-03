@@ -45,10 +45,14 @@ public class OpencorporaDictionary implements Dictionary {
   }
 
   @Override
-  public Set<Lemma> getLemmas(String word) {
+  public List<Lemma> getLemmas(String word) {
     if (Objects.isNull(this.forms.get(word))) {
       return null;
     }
-    return this.forms.get(word).stream().map(Form::getLemma).collect(Collectors.toSet());
+    return this.forms.get(word).stream().map(Form::getLemma).distinct().toList();
+  }
+
+  public Map<String, Set<Form>> getFormMap() {
+    return this.forms;
   }
 }

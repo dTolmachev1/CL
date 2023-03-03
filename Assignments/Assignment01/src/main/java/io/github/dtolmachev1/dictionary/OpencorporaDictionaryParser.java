@@ -18,7 +18,7 @@ import javax.xml.stream.events.EndElement;
 import javax.xml.stream.events.StartElement;
 import javax.xml.stream.events.XMLEvent;
 
-@SuppressWarnings("SpellCheckingInspection")
+@SuppressWarnings({"SpellCheckingInspection", "DuplicatedCode"})
 public class OpencorporaDictionaryParser {
   private static final String CHARSET = "UTF-8";
   private final XMLInputFactory streamFactory;
@@ -109,11 +109,11 @@ public class OpencorporaDictionaryParser {
   private void processGrammeme(String value) {
     this.grammemeContext = new Grammeme();
     this.grammemeContext.setParent(value);
-    this.opencorporaDictionary.addGrammeme(this.grammemeContext);
   }
 
   private void processName(String value) {
     this.grammemeContext.setName(value);
+    this.opencorporaDictionary.addGrammeme(this.grammemeContext);
   }
 
   private void processAlias(String value) {

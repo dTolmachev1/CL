@@ -2,7 +2,6 @@ package io.github.dtolmachev1.dictionary;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 @SuppressWarnings("SpellCheckingInspection")
 public interface Dictionary {
@@ -14,5 +13,5 @@ public interface Dictionary {
 
   Map<String, List<Form>> getForms(String word);
 
-  Set<Lemma> getLemmas(String word);
+  List<Lemma> getLemmas(String word);
 }
