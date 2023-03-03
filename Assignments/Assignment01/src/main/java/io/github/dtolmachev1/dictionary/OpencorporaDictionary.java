@@ -51,8 +51,4 @@ public class OpencorporaDictionary implements Dictionary {
     }
     return this.forms.get(word).stream().map(Form::getLemma).distinct().toList();
   }
-
-  public Map<String, Set<Form>> getFormMap() {
-    return this.forms;
-  }
 }
