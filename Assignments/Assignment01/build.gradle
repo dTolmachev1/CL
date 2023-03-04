@@ -10,6 +10,7 @@ repositories {
 }
 
 dependencies {
+    implementation 'org.apache.commons:commons-collections4:4.4'
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
 }
@@ -23,5 +24,15 @@ jar {
         attributes(
                 'Main-Class': 'io.github.dtolmachev1.ConsoleApp'
         )
+    }
+}
+
+task uberJar(type: Jar) {
+    manifest.from jar.manifest
+    archiveClassifier = 'uber'
+    from sourceSets.main.output
+    dependsOn configurations.runtimeClasspath
+    from {
+        configurations.runtimeClasspath.findAll { it.name.endsWith('jar') }.collect { zipTree(it) }
     }
 }

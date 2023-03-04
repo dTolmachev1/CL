@@ -4,10 +4,11 @@ import java.io.BufferedInputStream;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.util.Deque;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Objects;
+import java.util.Set;
 import java.util.function.Consumer;
 import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLInputFactory;
@@ -26,12 +27,13 @@ public class OpencorporaDictionaryParser {
   private final Deque<String> tagContext;
   private Grammeme grammemeContext;
   private Lemma lemmaContext;
-  private Form formContext;
+  private final Set<String> formContext;
 
   public OpencorporaDictionaryParser() {
     this.streamFactory = XMLInputFactory.newInstance();
     this.opencorporaDictionary = new OpencorporaDictionary();
     this.tagContext = new LinkedList<>();
+    this.formContext = new HashSet<>();
   }
 
   public OpencorporaDictionary parse(String filename) {
@@ -78,12 +80,14 @@ public class OpencorporaDictionaryParser {
 
   private void processEndElement(EndElement endElement) {
     switch (endElement.getName().getLocalPart()) {
-      case "grammeme" -> this.grammemeContext = null;
-      case "lemma" -> this.lemmaContext = null;
-      case "f" -> this.formContext = null;
-    }
-    if (List.of("grammeme", "name", "alias", "description", "lemma", "l", "f", "g").contains(endElement.getName().getLocalPart())) {
-      this.tagContext.pop();
+      case "grammeme" -> processElement(this::processGrammeme);
+      case "name" -> processElement(this::processName);
+      case "alias" -> processElement(this::processAlias);
+      case "description" -> processElement(this::processDescription);
+      case "lemma" -> processElement(this::processLemma);
+      case "l" -> processElement(this::processL);
+      case "f" -> processElement(this::processF);
+      case "g" -> processElement(this::processG);
     }
   }
 
@@ -106,9 +110,17 @@ public class OpencorporaDictionaryParser {
     processor.accept(value);
   }
 
+  private void processElement(Consumer<String> processor) {
+    if (List.of("grammeme", "lemma").contains(this.tagContext.pop())) {
+      processData("", processor);
+    }
+  }
+
   private void processGrammeme(String value) {
-    this.grammemeContext = new Grammeme();
-    this.grammemeContext.setParent(value);
+    if (!this.tagContext.isEmpty() && this.tagContext.peek().equals("grammeme")) {
+      this.grammemeContext = new Grammeme();
+      this.grammemeContext.setParent(value);
+    } else this.grammemeContext = null;
   }
 
   private void processName(String value) {
@@ -125,27 +137,37 @@ public class OpencorporaDictionaryParser {
   }
 
   private void processLemma(String value) {
-    this.lemmaContext = new Lemma();
+    if (this.tagContext.isEmpty() || !this.tagContext.peek().equals("lemma")) {
+      Iterator<String> iterator = this.formContext.iterator();
+      String stem = iterator.hasNext() ? iterator.next() : "";
+      while (!stem.isEmpty() && iterator.hasNext()) {
+        String condidate = iterator.next();
+        int boundary = 0;
+        while (boundary < Math.min(stem.length(), condidate.length()) && stem.charAt(boundary) == condidate.charAt(boundary)) {
+          boundary++;
+        }
+        stem = condidate.substring(0, boundary);
+      }
+      for (String form : this.formContext) {
+        this.opencorporaDictionary.addForm(stem, form.substring(stem.length()), this.lemmaContext);
+      }
+      this.lemmaContext = null;
+      this.formContext.clear();
+    } else this.lemmaContext = new Lemma();
   }
 
   private void processL(String value) {
     this.lemmaContext.setWord(value);
+    this.formContext.add(value);
   }
 
   private void processF(String value) {
-    this.formContext = new Form();
-    this.formContext.setLemma(this.lemmaContext);
-    this.formContext.setWord(value);
-    this.lemmaContext.addForm(this.formContext);
-    this.opencorporaDictionary.addForm(this.formContext);
+    this.formContext.add(value);
   }
 
   private void processG(String value) {
-    Grammeme grammeme = this.opencorporaDictionary.getGrammeme(value);
-    if (Objects.nonNull(this.formContext)) {
-      this.formContext.addGrammeme(grammeme);
-    } else if (Objects.nonNull(this.lemmaContext)) {
-      this.lemmaContext.addGrammeme(grammeme);
+    if (!this.tagContext.contains("f")) {
+      this.lemmaContext.addGrammeme(this.opencorporaDictionary.getGrammeme(value));
     }
   }
 }

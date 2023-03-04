@@ -6,7 +6,6 @@ import java.io.FileNotFoundException;
 import java.util.Deque;
 import java.util.Iterator;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.function.Consumer;
 import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLInputFactory;
@@ -50,8 +49,8 @@ public class ArticleParser {
 
   private void processStartElement(StartElement startElement) {
     switch (startElement.getName().getLocalPart()) {
-      case "article" -> processAttributes("article", startElement.getAttributes());
-      case "doc" -> processAttributes("doc", startElement.getAttributes());
+      case "article" -> processAttributes("article", startElement.getAttributes(), this::processArticle);
+      case "doc" -> processAttributes("doc", startElement.getAttributes(), this::processDoc);
     }
   }
 
@@ -64,20 +63,28 @@ public class ArticleParser {
   }
 
   private void processEndElement(EndElement endElement) {
-    if (endElement.getName().getLocalPart().equals("article")) {
-      this.textParser.print();
-    }
-    if (List.of("article", "doc").contains(endElement.getName().getLocalPart())) {
-      this.tagContext.pop();
+    switch (endElement.getName().getLocalPart()) {
+      case "article" -> processElement(this::processArticle);
+      case "doc" -> processElement(this::processDoc);
     }
   }
 
-  public void processAttributes(String tag, Iterator<Attribute> attributes) {
+  public void processAttributes(String tag, Iterator<Attribute> attributes, Consumer<String> processor) {
     this.tagContext.push(tag);
   }
 
   public void processData(String value, Consumer<String> processor) {
     processor.accept(value);
+  }
+
+  public void processElement(Consumer<String> processor) {
+    if (this.tagContext.pop().equals("article")) {
+      processData("", processor);
+    }
+  }
+
+  public void processArticle(String value) {
+    this.textParser.print();
   }
 
   public void processDoc(String value) {

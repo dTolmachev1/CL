@@ -11,7 +11,5 @@ public interface Dictionary {
 
   Grammeme getGrammeme(String name);
 
-  Map<String, List<Form>> getForms(String word);
-
   List<Lemma> getLemmas(String word);
 }
