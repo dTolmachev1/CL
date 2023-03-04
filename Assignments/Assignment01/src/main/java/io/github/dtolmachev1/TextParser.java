@@ -104,12 +104,13 @@ public class TextParser {
   }
 
   public void print() {
-    this.lemmasFrequency.entrySet().stream().sorted(Entry.comparingByValue(Comparator.reverseOrder())).forEach(entry -> {
-      try {
+    try {
+      for (Entry<WordData, Double> entry : this.lemmasFrequency.entrySet().stream().sorted(Entry.comparingByValue(Comparator.reverseOrder())).toList()) {
         this.outputWriter.write("<" + entry.getKey().lemma() + ", " + entry.getKey().pos() + ", " + entry.getValue() + ">\n");
-      } catch (IOException e) {
-        e.printStackTrace();
       }
-    });
+    this.outputWriter.flush();
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
   }
 }
