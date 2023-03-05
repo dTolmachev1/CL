@@ -141,12 +141,12 @@ public class OpencorporaDictionaryParser {
       Iterator<String> iterator = this.formContext.iterator();
       String stem = iterator.hasNext() ? iterator.next() : "";
       while (!stem.isEmpty() && iterator.hasNext()) {
-        String condidate = iterator.next();
+        String candidate = iterator.next();
         int boundary = 0;
-        while (boundary < Math.min(stem.length(), condidate.length()) && stem.charAt(boundary) == condidate.charAt(boundary)) {
+        while (boundary < Math.min(stem.length(), candidate.length()) && stem.charAt(boundary) == candidate.charAt(boundary)) {
           boundary++;
         }
-        stem = condidate.substring(0, boundary);
+        stem = candidate.substring(0, boundary);
       }
       for (String form : this.formContext) {
         this.opencorporaDictionary.addForm(stem, form.substring(stem.length()), this.lemmaContext);
