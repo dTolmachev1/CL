@@ -1,4 +1,4 @@
-package io.github.dtolmachev1;
+package io.github.dtolmachev1.frequency;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -14,7 +14,7 @@ public class FrequencyDictionaryParser {
   private static final int LEMMA_INDEX = 0;
   private static final int POS_INDEX = 1;
   private static final int IPM_INDEX = 2;
-  private final Map<String, FrequencyWordData> records;
+  private final Map<String, FrequencyDictionaryData> records;
 
   public FrequencyDictionaryParser() {
     this.records = new HashMap<>();
@@ -25,7 +25,7 @@ public class FrequencyDictionaryParser {
       String line = bufferedReader.readLine();
       while (Objects.nonNull(line)) {
         String[] values = line.split("\\s");
-        this.records.putIfAbsent(values[LEMMA_INDEX], new FrequencyWordData(values[POS_INDEX], Double.parseDouble(values[IPM_INDEX])));
+        this.records.putIfAbsent(values[LEMMA_INDEX], new FrequencyDictionaryData(values[POS_INDEX], Double.parseDouble(values[IPM_INDEX])));
         line = bufferedReader.readLine();
       }
     } catch (IOException e) {
@@ -33,7 +33,7 @@ public class FrequencyDictionaryParser {
     }
   }
 
-  public FrequencyWordData getFrequencyWordData(String lemma) {
-    return this.records.getOrDefault(lemma, new FrequencyWordData("s", 0.0));
+  public FrequencyDictionaryData getFrequencyWordData(String lemma) {
+    return this.records.getOrDefault(lemma, new FrequencyDictionaryData("s", 0.0));
   }
 }

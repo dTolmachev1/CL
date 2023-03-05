@@ -1,5 +1,6 @@
 package io.github.dtolmachev1;
 
+import io.github.dtolmachev1.frequency.TextParser;
 import java.io.BufferedInputStream;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -88,6 +89,7 @@ public class ArticleParser {
   }
 
   public void processDoc(String value) {
+    this.textParser.increaseDocCount();
     this.textParser.parseOneText(value);
   }
 }
