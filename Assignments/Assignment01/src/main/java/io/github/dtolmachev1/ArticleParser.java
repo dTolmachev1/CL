@@ -58,7 +58,7 @@ public class ArticleParser {
   private void processCharacters(Characters characters) {
     if (!this.tagContext.isEmpty()) {
       if (this.tagContext.peek().equals("doc")) {
-        processData(characters.getData().trim().replaceAll(" +", ""), this::processDoc);
+        processData(characters.getData().trim().replaceAll(" +", " "), this::processDoc);
       }
     }
   }
@@ -72,6 +72,9 @@ public class ArticleParser {
 
   public void processAttributes(String tag, Iterator<Attribute> attributes, Consumer<String> processor) {
     this.tagContext.push(tag);
+    if (this.tagContext.peek().equals("doc")) {
+      this.textParser.increaseDocCount();
+    }
   }
 
   public void processData(String value, Consumer<String> processor) {
@@ -89,7 +92,6 @@ public class ArticleParser {
   }
 
   public void processDoc(String value) {
-    this.textParser.increaseDocCount();
     this.textParser.parseOneText(value);
   }
 }

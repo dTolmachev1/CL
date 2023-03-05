@@ -26,7 +26,7 @@ public class TextParser {
   private static final Charset CHARSET = StandardCharsets.UTF_8;
   private static final String FREQUENCY_DICTIONARY = "../../Resources/frequency_dict.txt";
   private static final String OPENCORPORA_DICTIONARY = "../../Resources/dict.opcorpora.xml";
-  private static final Map<String, String> toCorpora = Map.ofEntries(
+  private static final Map<String, String> TO_CORPORA = Map.ofEntries(
       new SimpleImmutableEntry<>("s", "NOUN"),
       new SimpleImmutableEntry<>("a", "ADJF"),
       new SimpleImmutableEntry<>("v", "VERB"),
@@ -95,7 +95,7 @@ public class TextParser {
         FrequencyDictionaryData frequencyDictionaryData = this.frequencyDictionaryParser.getFrequencyWordData(possibleWord);
         if (frequencyDictionaryData.ipm() > maxIpm) {
           word = possibleWord;
-          wordPos = toCorpora.get(frequencyDictionaryData.pos());
+          wordPos = TO_CORPORA.get(frequencyDictionaryData.pos());
           maxIpm = frequencyDictionaryData.ipm();
         }
       }
@@ -109,13 +109,10 @@ public class TextParser {
 
   public void parseOneText(String text) {
     List<String> tokens = this.tokenize(text);
-    this.wordCount = tokens.size();
+    this.wordCount += tokens.size();
     for (String token : tokens) {
       List<Lemma> possibleLemmas = this.dictionary.getLemmas(token);
-      if (Objects.isNull(possibleLemmas)) {
-        continue;
-      }
-      WordData wordData = resolveAmbiguity(possibleLemmas);
+      WordData wordData = Objects.nonNull(possibleLemmas) ? resolveAmbiguity(possibleLemmas) : new WordData(token, TO_CORPORA.get("unknown"));
       WordDataFrequency lemmaFrequency = this.lemmasFrequency.computeIfAbsent(wordData, k -> new WordDataFrequency());
       lemmaFrequency.increaseEntryCount();
       if (lemmaFrequency.getLastTextId() < this.docCount) {

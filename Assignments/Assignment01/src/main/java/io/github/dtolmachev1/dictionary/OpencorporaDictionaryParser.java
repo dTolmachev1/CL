@@ -93,7 +93,7 @@ public class OpencorporaDictionaryParser {
 
   private void processAttributes(String tag, Iterator<Attribute> iterator, Consumer<String> processor) {
     this.tagContext.push(tag);
-    if (tag.equals("lemma")) {
+    if (this.tagContext.peek().equals("lemma")) {
       processData("", processor);
     }
     while (iterator.hasNext()) {
